@@ -15,7 +15,7 @@ project:
 
   # Source files
   source_files:
-    - "Project_V2.v"
+    - "project.v"
 
 # Pin mapping
 pinout:
