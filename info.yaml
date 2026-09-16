@@ -1,7 +1,7 @@
 # Tiny Tapeout project information
 project:
   title:        "6-bit Multi-Functional ALU"
-  author:       "Abdelrahman Ahmed"
+  author:       "ziad mokhtar"
   discord:      "ziadmokhtar0394"
   description:  "6-bit ALU featuring RCA, CLA, multipliers, logic, shifts, popcount, and comparison operations"
   language:     "Verilog"
