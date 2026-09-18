@@ -109,7 +109,6 @@ module alu_core (
     wire        rca_cout;
     wire [15:0] cla_sum;
     wire        cla_cout;
-    wire [31:0] array_mult_prod;
     wire [31:0] wallace_mult_prod;
     wire [15:0] logic_result;
     wire [15:0] shift_pop_result;
@@ -121,10 +120,6 @@ module alu_core (
 
     cla_adder_16bit u_cla (
         .A(A), .B(B), .Cin(Cin), .sum(cla_sum), .Cout(cla_cout)
-    );
-
-    array_mult #(.W(16)) u_array_mult (
-        .A(A), .B(B), .Product(array_mult_prod)
     );
 
     wallace_tree_mult_16bit u_wallace (
@@ -151,7 +146,7 @@ module alu_core (
         case (opcode)
             3'b000: begin Result = {16'b0, rca_sum};   Cout = rca_cout; end
             3'b001: begin Result = {16'b0, cla_sum};   Cout = cla_cout; end
-            3'b010: begin Result = array_mult_prod;                     end
+            3'b010: begin Result = wallace_mult_prod;                   end
             3'b011: begin Result = wallace_mult_prod;                   end
             3'b100: begin Result = {16'b0, logic_result};               end
             3'b101: begin Result = {16'b0, shift_pop_result};           end
@@ -273,59 +268,6 @@ module cla_4bit ( A, B, Cin, sum, Cout );
     assign sum[1] = p1 ^ C1;
     assign sum[2] = p2 ^ C2;
     assign sum[3] = p3 ^ C3;
-
-endmodule
-
-// the design of array_mult 
-
-module array_mult #(parameter W = 16) (
-    input  wire [W-1:0]   A,
-    input  wire [W-1:0]   B,
-    output reg  [2*W-1:0] Product
-);
-
-    reg [W-1:0] pp          [0:W-1];
-    reg [W-1:0] sum_stage   [0:W-1];
-    reg [W-1:0] carry_stage [0:W-1];
-    reg [W-1:0] final_carry;
-
-    integer i, j;
-
-    always @(*) begin
-        // partial products
-        for (i = 0; i < W; i = i + 1)
-            for (j = 0; j < W; j = j + 1)
-                pp[i][j] = A[j] & B[i];
-
-        // row 0
-        for (j = 0; j < W; j = j + 1) begin
-            sum_stage[0][j]   = pp[0][j];
-            carry_stage[0][j] = 1'b0;
-        end
-        Product[0] = sum_stage[0][0];
-
-        // carry-save rows 1..W-1
-        for (i = 1; i < W; i = i + 1) begin
-            {carry_stage[i][0], sum_stage[i][0]} = pp[i][0] + sum_stage[i-1][1];
-            Product[i] = sum_stage[i][0];
-
-            for (j = 1; j < W-1; j = j + 1) begin
-                {carry_stage[i][j], sum_stage[i][j]} =
-                    pp[i][j] + sum_stage[i-1][j+1] + carry_stage[i][j-1];
-            end
-
-            {carry_stage[i][W-1], sum_stage[i][W-1]} =
-                pp[i][W-1] + carry_stage[i-1][W-1] + carry_stage[i][W-2];
-        end
-
-        // final carry-propagate row
-        final_carry[0] = 1'b0;
-        for (j = 0; j < W-1; j = j + 1) begin
-            {final_carry[j+1], Product[j+W]} =
-                sum_stage[W-1][j+1] + carry_stage[W-1][j] + final_carry[j];
-        end
-        Product[2*W-1] = final_carry[W-1];
-    end
 
 endmodule
 
