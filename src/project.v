@@ -105,18 +105,12 @@ module alu_core (
     output reg          Valid
 );
 
-    wire [15:0] rca_sum;
-    wire        rca_cout;
     wire [15:0] cla_sum;
     wire        cla_cout;
     wire [31:0] wallace_mult_prod;
     wire [15:0] logic_result;
     wire [15:0] shift_pop_result;
     wire [15:0] comp_result;
-
-    rca_nbit #(.N(16)) u_rca (
-        .A(A), .B(B), .Cin(Cin), .sum(rca_sum), .Cout(rca_cout)
-    );
 
     cla_adder_16bit u_cla (
         .A(A), .B(B), .Cin(Cin), .sum(cla_sum), .Cout(cla_cout)
@@ -144,7 +138,8 @@ module alu_core (
         Cout   = 1'b0;
         Valid  = 1'b1;
         case (opcode)
-            3'b000: begin Result = {16'b0, rca_sum};   Cout = rca_cout; end
+            3'b000: begin Result = {16'b0, cla_sum};   Cout = cla_cout; end
+            3'b001: begin Result = {16'b0, cla_sum};   Cout = cla_cout; end
             3'b001: begin Result = {16'b0, cla_sum};   Cout = cla_cout; end
             3'b010: begin Result = wallace_mult_prod;                   end
             3'b011: begin Result = wallace_mult_prod;                   end
@@ -156,26 +151,6 @@ module alu_core (
         endcase
     end
 
-endmodule
-
-// the design of ripple carry
-
-module rca_nbit #(parameter N = 16) (
-    input  wire [N-1:0] A,
-    input  wire [N-1:0] B,
-    input  wire         Cin,
-    output reg  [N-1:0] sum,
-    output reg           Cout
-);
-    reg [N:0] carry;
-    integer i;
-    always @(*) begin
-        carry[0] = Cin;
-        for (i = 0; i < N; i = i + 1) begin
-            {carry[i+1], sum[i]} = A[i] + B[i] + carry[i];
-        end
-        Cout = carry[N];
-    end
 endmodule
 
 // the design of carry adder
