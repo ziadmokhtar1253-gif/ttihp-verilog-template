@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        "6-bit Multi-Functional ALU"
+  title:        "6-bit multi function ALU ( eldawly_V2) "
   author:       "ziad mokhtar"
   discord:      "ziadmokhtar0394"
   description:  "6-bit ALU featuring RCA, CLA, multipliers, logic, shifts, popcount, and comparison operations"
